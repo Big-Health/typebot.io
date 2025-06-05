@@ -1,0 +1,28 @@
+version: 0.2
+
+env:
+  variables:
+    DOCKERFILE: "Dockerfile-builder"
+
+phases:
+  pre_build:
+    commands:
+      # Log into ECR
+      - aws ecr get-login-password | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+
+  build:
+    commands:
+      - export GIT_SHA=$CODEBUILD_RESOLVED_SOURCE_VERSION
+
+      - docker build . -t ${IMAGE_REPO_URL}:${CODEBUILD_BUILD_NUMBER} -t ${IMAGE_REPO_URL}:latest -f $DOCKERFILE
+
+      - docker push ${IMAGE_REPO_URL}:${CODEBUILD_BUILD_NUMBER}
+      - docker push ${IMAGE_REPO_URL}:latest
+
+      # Get the authoritative task definition
+      # This is the task definition managed by Terraform
+      - aws ecs describe-task-definition --task-def $TASK_DEFINITION_SOURCE_ARN > task_definition.json
+
+      # Deploy it
+      - ./scripts/ecs-deploy -c $ECS_CLUSTER_NAME -n $ECS_SERVICE_NAME -i "${IMAGE_REPO_URL}:${CODEBUILD_BUILD_NUMBER}" -t 300 --task-definition-file task_definition.json
+
