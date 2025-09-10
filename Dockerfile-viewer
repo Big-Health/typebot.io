@@ -1,1 +1,1 @@
-FROM baptistearno/typebot-viewer:3.8.0
+FROM baptistearno/typebot-viewer:3.11.0
