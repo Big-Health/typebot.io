@@ -1,4 +1,8 @@
-import { defineCollection, defineConfig } from "@content-collections/core";
+import {
+  defineCollection,
+  defineConfig,
+  suppressDeprecatedWarnings,
+} from "@content-collections/core";
 import { compileMDX } from "@content-collections/mdx";
 import {
   transformerMetaHighlight,
@@ -12,6 +16,8 @@ import remarkGfm from "remark-gfm";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
 
+suppressDeprecatedWarnings("legacySchema");
+
 const posts = defineCollection({
   name: "posts",
   directory: "content",
@@ -20,6 +26,7 @@ const posts = defineCollection({
     title: z.string(),
     description: z.string().optional(),
     postedAt: z.string().date().optional(),
+    updatedAt: z.string().date().optional(),
     author: z.string(),
     cover: z.string().optional(),
   }),
@@ -44,6 +51,9 @@ export default defineConfig({
 
 const rehypePrettyCodeSettings = {
   theme: "material-theme-palenight",
+  defaultLang: {
+    block: "md",
+  },
   transformers: [
     transformerMetaHighlight(),
     transformerMetaWordHighlight(),

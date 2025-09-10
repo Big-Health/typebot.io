@@ -1,13 +1,13 @@
-import { publicProcedure } from "@/helpers/server/trpc";
 import * as Sentry from "@sentry/nextjs";
 import { parseUnknownError } from "@typebot.io/lib/parseUnknownError";
-import { WhatsAppError } from "@typebot.io/whatsapp/WhatsAppError";
 import { resumeWhatsAppFlow } from "@typebot.io/whatsapp/resumeWhatsAppFlow";
 import {
   type WhatsAppWebhookRequestBody,
   whatsAppWebhookRequestBodySchema,
 } from "@typebot.io/whatsapp/schemas";
+import { WhatsAppError } from "@typebot.io/whatsapp/WhatsAppError";
 import { z } from "@typebot.io/zod";
+import { publicProcedure } from "@/helpers/server/trpc";
 
 const whatsAppSessionIdPrefix = "wa-";
 
@@ -60,10 +60,9 @@ export const receiveMessage = publicProcedure
         Sentry.captureMessage(err.message, err.details);
       } else {
         console.log("Sending unknown error to Sentry");
-        const details = safeJsonParse(
-          (await parseUnknownError({ err })).details,
-        );
-        console.log("details", details);
+        const parsedError = await parseUnknownError({ err });
+        console.log(parsedError);
+        const details = safeJsonParse(parsedError.details);
         Sentry.addBreadcrumb({
           data:
             typeof details === "object" && details
