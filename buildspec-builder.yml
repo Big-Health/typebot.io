@@ -24,5 +24,5 @@ phases:
       - aws ecs describe-task-definition --task-def $TASK_DEFINITION_SOURCE_ARN > task_definition.json
 
       # Deploy it
-      - ./scripts/ecs-deploy -c $ECS_CLUSTER_NAME -n $ECS_SERVICE_NAME -i "${IMAGE_REPO_URL}:${CODEBUILD_BUILD_NUMBER}" -t 300 --task-definition-file task_definition.json
+      - ./scripts/ecs-deploy -c $ECS_CLUSTER_NAME -n $ECS_SERVICE_NAME -i "${IMAGE_REPO_URL}:${CODEBUILD_BUILD_NUMBER}" -t 500 --task-definition-file task_definition.json
 
