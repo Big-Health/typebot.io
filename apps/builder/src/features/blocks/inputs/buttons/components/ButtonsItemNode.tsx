@@ -1,11 +1,3 @@
-import {
-  Editable,
-  EditablePreview,
-  EditableTextarea,
-  Flex,
-  SlideFade,
-  useColorModeValue,
-} from "@chakra-ui/react";
 import { useTranslate } from "@tolgee/react";
 import type {
   Item,
@@ -16,8 +8,10 @@ import { convertStrToList } from "@typebot.io/lib/convertStrToList";
 import { isEmpty } from "@typebot.io/lib/utils";
 import { Button } from "@typebot.io/ui/components/Button";
 import { Popover } from "@typebot.io/ui/components/Popover";
-import { useRef, useState } from "react";
-import { SettingsIcon } from "@/components/icons";
+import { Settings01Icon } from "@typebot.io/ui/icons/Settings01Icon";
+import { cx } from "@typebot.io/ui/lib/cva";
+import { useState } from "react";
+import { SingleLineEditable } from "@/components/SingleLineEditable";
 import { useTypebot } from "@/features/editor/providers/TypebotProvider";
 import { useGraph } from "@/features/graph/providers/GraphProvider";
 import { ButtonsItemSettings } from "./ButtonsItemSettings";
@@ -38,7 +32,6 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
         ? t("blocks.inputs.button.clickToEdit.label")
         : ""),
   );
-  const editableRef = useRef<HTMLDivElement | null>(null);
 
   const handleInputSubmit = () => {
     if (itemValue === "") deleteItem(indices);
@@ -101,51 +94,32 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
     >
       <Popover.Trigger
         render={(props) => (
-          <Flex {...props} px={4} py={2} justify="center" w="full">
-            <Editable
-              ref={editableRef}
-              flex="1"
-              startWithEditView={
+          <div className="flex px-4 py-2 justify-center w-full" {...props}>
+            <SingleLineEditable
+              defaultEdit={
                 isEmpty(item.content) ||
                 item.content === t("blocks.inputs.button.clickToEdit.label")
               }
               value={itemValue}
-              onChange={handleEditableChange}
-              onSubmit={handleInputSubmit}
-              onKeyDownCapture={handleKeyPress}
-              maxW="180px"
-            >
-              <EditablePreview
-                w="full"
-                color={
+              input={{
+                onValueChange: handleEditableChange,
+                onKeyDownCapture: handleKeyPress,
+                onMouseDownCapture: (e) => e.stopPropagation(),
+                onWheelCapture: (e) => e.stopPropagation(),
+              }}
+              className="max-w-[180px] w-full"
+              onValueCommit={handleInputSubmit}
+              preview={{
+                className: cx(
+                  "hover:bg-transparent",
                   item.content !== t("blocks.inputs.button.clickToEdit.label")
                     ? "inherit"
-                    : "gray.500"
-                }
-                cursor="pointer"
-              />
-              <EditableTextarea
-                onMouseDownCapture={(e) => e.stopPropagation()}
-                resize="none"
-                onWheelCapture={(e) => e.stopPropagation()}
-              />
-            </Editable>
-            <SlideFade
-              offsetY="5px"
-              offsetX="-5px"
-              in={isMouseOver}
-              style={{
-                position: "absolute",
-                right: "-0.25rem",
-                top: "-0.25rem",
-                zIndex: 3,
+                    : "text-gray-9",
+                ),
               }}
-              unmountOnExit
-            >
-              <Flex
-                bgColor={useColorModeValue("white", "gray.900")}
-                rounded="md"
-              >
+            />
+            {isMouseOver && (
+              <div className="flex rounded-md bg-gray-1 absolute -right-1 -top-1 z-10 animate-in fade-in-0">
                 <Button
                   aria-label={t("blocks.inputs.button.openSettings.ariaLabel")}
                   variant="ghost"
@@ -153,11 +127,11 @@ export const ButtonsItemNode = ({ item, indices, isMouseOver }: Props) => {
                   className="shadow-md"
                   onClick={() => setOpenedNodeId(item.id)}
                 >
-                  <SettingsIcon />
+                  <Settings01Icon />
                 </Button>
-              </Flex>
-            </SlideFade>
-          </Flex>
+              </div>
+            )}
+          </div>
         )}
       />
       <Popover.Popup side="right" className="p-4">

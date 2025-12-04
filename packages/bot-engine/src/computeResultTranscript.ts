@@ -1,10 +1,5 @@
 import { BubbleBlockType } from "@typebot.io/blocks-bubbles/constants";
-import {
-  blockHasItems,
-  isBubbleBlock,
-  isCardsInput,
-  isInputBlock,
-} from "@typebot.io/blocks-core/helpers";
+import { isBubbleBlock, isInputBlock } from "@typebot.io/blocks-core/helpers";
 import { InputBlockType } from "@typebot.io/blocks-inputs/constants";
 import { LogicBlockType } from "@typebot.io/blocks-logic/constants";
 import type { ContinueChatResponse } from "@typebot.io/chat-api/schemas";
@@ -12,6 +7,7 @@ import type { TypebotInSession } from "@typebot.io/chat-session/schemas";
 import { executeCondition } from "@typebot.io/conditions/executeCondition";
 import type { Group } from "@typebot.io/groups/schemas";
 import { createId } from "@typebot.io/lib/createId";
+import { isDefined } from "@typebot.io/lib/utils";
 import type { Answer } from "@typebot.io/results/schemas/answers";
 import type { SessionStore } from "@typebot.io/runtime-session-store";
 import type { Edge } from "@typebot.io/typebot/schemas/edge";
@@ -19,11 +15,14 @@ import type {
   SetVariableHistoryItem,
   Variable,
 } from "@typebot.io/variables/schemas";
+import { createVirtualEdgeId } from "./addPortalEdge";
+import { getReplyOutgoingEdge } from "./getReplyOutgoingEdge";
 import { isTypebotInSessionAtLeastV6 } from "./helpers/isTypebotInSessionAtLeastV6";
 import {
   type BubbleBlockWithDefinedContent,
   parseBubbleBlock,
 } from "./parseBubbleBlock";
+import { validateAndParseInputMessage } from "./validateAndParseInputMessage";
 
 // -----------------------------------------------------------------------------
 // 🛠️  Queue helpers ────────────────────────────────────────────────────────────
@@ -43,7 +42,10 @@ const iterator = <T>(items: readonly T[]): QueueIterator<T> => {
 };
 
 type SetVarSnapshot = Readonly<
-  Pick<SetVariableHistoryItem, "blockId" | "variableId" | "value">
+  Pick<
+    SetVariableHistoryItem,
+    "blockId" | "variableId" | "value" | "blockIndex"
+  >
 >;
 
 type TranscriptMessage = {
@@ -156,6 +158,7 @@ const executeGroup = ({
     setVariableHistory: QueueIterator<SetVarSnapshot>;
     visitedEdges: QueueIterator<string>;
   };
+  isFirstGroup?: boolean;
   currentBlockId?: string;
   sessionStore: SessionStore;
 }): TranscriptMessage[] => {
@@ -177,7 +180,16 @@ const executeGroup = ({
     if (!typebot) throw new Error("Typebot not found in session");
 
     if (setVariableHistory.peek()?.blockId === block.id) {
-      typebot.variables = applySetVariable(setVariableHistory.next(), typebot);
+      const currentBlockIndex = setVariableHistory.peek()?.blockIndex;
+      do {
+        typebot.variables = applySetVariable(
+          setVariableHistory.next(),
+          typebot,
+        );
+      } while (
+        isDefined(currentBlockIndex) &&
+        setVariableHistory.peek()?.blockIndex === currentBlockIndex
+      );
     }
 
     let nextEdgeId = block.outgoingEdgeId;
@@ -252,33 +264,36 @@ const executeGroup = ({
             : answer.content,
       });
 
-      const nextVisitedEdge = visitedEdges.peek();
-      // Check if the next visited edge matches an non default outgoing edge
-      if (nextVisitedEdge) {
-        if (isCardsInput(block)) {
-          for (const item of block.items) {
-            if (!item.paths) continue;
-            for (const path of item.paths) {
-              if (path.outgoingEdgeId === nextVisitedEdge) {
-                nextEdgeId = path.outgoingEdgeId;
-                visitedEdges.next();
-                break;
-              }
-            }
-          }
-        }
-        if (blockHasItems(block)) {
-          for (const item of block.items) {
-            if (item.outgoingEdgeId !== nextVisitedEdge) continue;
-            nextEdgeId = item.outgoingEdgeId;
-            visitedEdges.next();
-            break;
-          }
-        }
+      const parsedReply = validateAndParseInputMessage(
+        {
+          type: "text",
+          text: answer.content,
+          attachedFileUrls: answer.attachedFileUrls,
+        },
+        {
+          block,
+          variables: typebot.variables,
+          sessionStore,
+          skipValidation: true,
+        },
+      );
+
+      if (parsedReply.status === "fail") {
+        throw new Error(
+          "Parsed reply is in fail status when computing result transcript",
+        );
       }
 
-      if (!nextEdgeId && block.outgoingEdgeId)
-        nextEdgeId = block.outgoingEdgeId;
+      const replyOutgoingEdge = getReplyOutgoingEdge(parsedReply, {
+        block,
+        variables: typebot.variables,
+        sessionStore,
+      });
+
+      if (!replyOutgoingEdge) continue;
+
+      if (replyOutgoingEdge.isOffDefaultPath) visitedEdges.next();
+      nextEdgeId = replyOutgoingEdge.id;
     }
     // ──────────────────────────────────────────────────────────── Condition
     else if (block.type === LogicBlockType.CONDITION) {
@@ -295,12 +310,23 @@ const executeGroup = ({
         nextEdgeId = passed.outgoingEdgeId;
       }
     }
-    // ──────────────────────────────────────────────────────────── AB Test
-    // ──────────────────────────────────────────────────────────── Jump
-    // ──────────────────────────────────────────────────────────── Return
-    else if (
+    if (block.type === LogicBlockType.JUMP) {
+      if (!block.options?.groupId) continue;
+      const virtualId = createVirtualEdgeId({
+        groupId: block.options.groupId,
+        blockId: block.options.blockId,
+      });
+      typebotsQueue[0].typebot.edges.push({
+        id: virtualId,
+        from: { blockId: block.id },
+        to: {
+          groupId: block.options.groupId,
+          blockId: block.options.blockId,
+        },
+      });
+      nextEdgeId = virtualId;
+    } else if (
       block.type === LogicBlockType.AB_TEST ||
-      block.type === LogicBlockType.JUMP ||
       block.type === LogicBlockType.RETURN
     ) {
       nextEdgeId = visitedEdges.next();

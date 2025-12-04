@@ -29,12 +29,12 @@ export const Avatar = (props: {
           <img
             src={props.src}
             alt="Bot avatar"
-            class="flex justify-center items-center relative animate-fade-in flex-shrink-0 w-6 h-6 text-sm @xs:w-10 @xs:h-10 @xs:text-xl"
+            class="flex justify-center items-center relative animate-fade-in shrink-0 w-6 h-6 text-sm @xs:w-10 @xs:h-10 @xs:text-xl"
             elementtiming={"Bot avatar"}
           />
         </Match>
         <Match when={true}>
-          <figure class="flex justify-center items-center rounded-full text-white relative animate-fade-in flex-shrink-0 w-6 h-6 text-sm @xs:w-10 @xs:h-10 @xs:text-xl">
+          <figure class="flex justify-center items-center rounded-full text-white relative animate-fade-in shrink-0 w-6 h-6 text-sm @xs:w-10 @xs:h-10 @xs:text-xl">
             <img
               src={props.src}
               alt="Bot avatar"
@@ -50,5 +50,7 @@ export const Avatar = (props: {
 };
 
 const isEmoji = (src: string) => {
-  return /^\p{Emoji}$/u.test(src);
+  return /^(?:\p{Extended_Pictographic}(?:\uFE0F)?(?:\p{Emoji_Modifier})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?(?:\p{Emoji_Modifier})?)*)|(?:\p{Regional_Indicator}{2})|(?:[0-9#*]\uFE0F?\u20E3)$/u.test(
+    src,
+  );
 };

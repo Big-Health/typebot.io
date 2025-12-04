@@ -50,7 +50,6 @@ const nextConfig = {
     defaultLocale: "en",
     locales: ["en", "fr", "pt", "pt-BR", "de", "ro", "es", "it", "el"],
   },
-  serverExternalPackages: ["isolated-vm"],
   outputFileTracingRoot: join(__dirname, "../../"),
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -58,21 +57,12 @@ const nextConfig = {
       config.ignoreWarnings = [
         ...(config.ignoreWarnings ?? []),
         {
-          module:
-            /@opentelemetry\/instrumentation\/build\/esm\/platform\/node\/instrumentation\.js/,
-          message:
-            /Critical dependency: the request of a dependency is an expression/,
+          module: /@opentelemetry/,
+          message: /Critical dependency/,
         },
       ];
       return config;
     }
-    config.resolve.alias["minio"] = false;
-    config.resolve.alias["qrcode"] = false;
-    config.resolve.alias["isolated-vm"] = false;
-    config.resolve.alias["@googleapis/gmail"] = false;
-    config.resolve.alias["nodemailer"] = false;
-    config.resolve.alias["google-auth-library"] = false;
-    config.resolve.alias["posthog-node"] = false;
     return config;
   },
   headers: async () => {
@@ -96,10 +86,10 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
               "style-src 'self' 'unsafe-inline' https:",
               `connect-src 'self' https: wss:${
-                isDev ? " http://localhost:*" : ""
+                isDev ? " http://localhost:* ws://localhost:*" : ""
               }`,
               "frame-src 'self' https:",
-              "img-src 'self' data: blob: https:",
+              `img-src 'self' data: blob: https:${isDev ? " http://localhost:*" : ""}`,
               "font-src 'self' https: data:",
               "media-src 'self' https:",
               "worker-src 'self' blob:",
@@ -120,8 +110,9 @@ const nextConfig = {
   },
 };
 
-export default process.env.SENTRY_DSN
+export default process.env.SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN
   ? withSentryConfig(nextConfig, {
+      telemetry: false,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,

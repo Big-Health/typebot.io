@@ -6,14 +6,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./schemas": "./src/schemas.ts",
-    "./constants": "./src/constants.ts"
+    "./constants": "./src/constants.ts",
+    "./handlers": "./src/handlers.ts"
   },
   "dependencies": {
     "@typebot.io/forge": "workspace:*",
-    "jsonwebtoken": "9.0.1"
+    "jsonwebtoken": "^9.0.1"
   },
   "devDependencies": {
     "@typebot.io/tsconfig": "workspace:*",
-    "@types/jsonwebtoken": "9.0.2"
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/react": "^19.2.7"
   }
 }

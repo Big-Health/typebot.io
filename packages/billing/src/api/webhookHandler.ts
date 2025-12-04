@@ -208,6 +208,17 @@ export const webhookHandler = async (
             previous.status !== "unpaid" &&
             !existingWorkspace.isQuarantined
           ) {
+            await trackEvents(
+              existingWorkspace.members.map((m) => ({
+                name: "Workspace unpaid",
+                workspaceId: existingWorkspace.id,
+                userId: m.userId,
+              })),
+            );
+            if (!subscription.cancel_at_period_end)
+              await stripe.subscriptions.update(subscription.id, {
+                cancel_at_period_end: true,
+              });
             await prisma.workspace.updateMany({
               where: {
                 id: existingWorkspace.id,
@@ -226,6 +237,11 @@ export const webhookHandler = async (
             (previous.status === "past_due" || previous?.status === "unpaid") &&
             existingWorkspace.isPastDue
           ) {
+            if (subscription.cancel_at_period_end)
+              await stripe.subscriptions.update(subscription.id, {
+                cancel_at_period_end: false,
+              });
+
             await prisma.workspace.updateMany({
               where: {
                 id: existingWorkspace.id,

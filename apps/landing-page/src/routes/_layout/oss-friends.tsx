@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { ArrowUpRightIcon } from "@typebot.io/ui/icons/ArrowUpRightIcon";
+import { ArrowUpRight01Icon } from "@typebot.io/ui/icons/ArrowUpRight01Icon";
 import { z } from "@typebot.io/zod";
 import { Card } from "@/components/Card";
 import { ContentPageWrapper } from "@/components/ContentPageWrapper";
@@ -41,7 +41,7 @@ function RouteComponent() {
     <ContentPageWrapper>
       <div className="flex flex-col gap-4">
         <h1>Our Open-source Friends</h1>
-        <p>
+        <p className="text-foreground/70">
           We love open-source and we are proud to support these amazing
           projects.
         </p>
@@ -57,7 +57,7 @@ function RouteComponent() {
             <Card className="h-full relative">
               <h2 className="text-2xl">{friend.name}</h2>
               <p>{friend.description}</p>
-              <ArrowUpRightIcon className="size-6 absolute top-4 right-4 text-gray-10" />
+              <ArrowUpRight01Icon className="size-6 absolute top-4 right-4" />
             </Card>
           </Link>
         ))}

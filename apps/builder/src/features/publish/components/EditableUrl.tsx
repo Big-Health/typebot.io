@@ -1,17 +1,6 @@
-import {
-  Editable,
-  EditableInput,
-  EditablePreview,
-  HStack,
-  Text,
-  useEditableControls,
-} from "@chakra-ui/react";
-import { useTranslate } from "@tolgee/react";
-import { Button, type ButtonProps } from "@typebot.io/ui/components/Button";
-import { Tooltip } from "@typebot.io/ui/components/Tooltip";
-import { EditIcon } from "@typebot.io/ui/icons/EditIcon";
 import { useState } from "react";
 import { CopyButton } from "@/components/CopyButton";
+import { SingleLineEditable } from "@/components/SingleLineEditable";
 
 type EditableUrlProps = {
   hostname: string;
@@ -26,7 +15,6 @@ export const EditableUrl = ({
   isValid,
   onPathnameChange,
 }: EditableUrlProps) => {
-  const { t } = useTranslate();
   const [value, setValue] = useState(pathname);
 
   const handleSubmit = async (newPathname: string) => {
@@ -36,51 +24,25 @@ export const EditableUrl = ({
   };
 
   return (
-    <Editable
-      as={HStack}
-      spacing={3}
-      value={value}
-      onChange={setValue}
-      onSubmit={handleSubmit}
-    >
-      <HStack spacing={1}>
-        <Text flexShrink={0}>{hostname}/</Text>
-        <Tooltip.Root>
-          <Tooltip.Trigger
-            render={
-              <EditablePreview
-                mx={1}
-                borderWidth="1px"
-                px={3}
-                rounded="md"
-                cursor="text"
-                display="flex"
-                fontWeight="medium"
-              />
-            }
-          />
-          <Tooltip.Popup>{t("edit")}</Tooltip.Popup>
-        </Tooltip.Root>
-
-        <EditableInput px={2} />
-      </HStack>
-
-      <HStack>
-        <EditButton size="xs" />
-        <CopyButton textToCopy={`${hostname}/${value ?? ""}`} />
-      </HStack>
-    </Editable>
-  );
-};
-
-const EditButton = (props: ButtonProps) => {
-  const { t } = useTranslate();
-  const { isEditing, getEditButtonProps } = useEditableControls();
-
-  return isEditing ? null : (
-    <Button {...props} {...getEditButtonProps()} variant="secondary">
-      <EditIcon />
-      {t("edit")}
-    </Button>
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <p className="shrink-0">{hostname}/</p>
+        <SingleLineEditable
+          value={value}
+          className="font-medium"
+          common={{
+            className: "px-2",
+          }}
+          input={{
+            onValueChange: setValue,
+          }}
+          preview={{
+            className: "border-gray-7 cursor-text",
+          }}
+          onValueCommit={handleSubmit}
+        />
+      </div>
+      <CopyButton textToCopy={`${hostname}/${value ?? ""}`} />
+    </div>
   );
 };

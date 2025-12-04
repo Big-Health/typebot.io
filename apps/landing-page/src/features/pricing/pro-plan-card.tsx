@@ -6,8 +6,8 @@ import {
 import { formatPrice } from "@typebot.io/billing/helpers/formatPrice";
 import { Plan } from "@typebot.io/prisma/enum";
 import { Button } from "@typebot.io/ui/components/Button";
+import { MoreInfoTooltip } from "@typebot.io/ui/components/MoreInfoTooltip";
 import { CtaButtonLink } from "@/components/link";
-import { MoreInfoTooltip } from "@/components/MoreInfoTooltip";
 import { registerUrl } from "@/constants";
 import {
   PerkListItem,
@@ -18,8 +18,8 @@ import {
 import { chatsTooltip } from "./constants";
 
 export const ProPlanCard = ({ children }: { children?: React.ReactNode }) => (
-  <PricingCardRoot className="border-purple-8 border-4">
-    <PlanNamePill className="bg-purple-8 absolute top-0 flex flex-col">
+  <PricingCardRoot className="border-violet-400 border-4">
+    <PlanNamePill className="bg-violet-400 text-white absolute top-0 flex flex-col">
       Pro
     </PlanNamePill>
     <div className="flex flex-col gap-10 items-center">
@@ -55,20 +55,16 @@ export const ProPerksList = ({ onChatsTiersClick }: ProPerksListProps) => (
     </PerkListItem>
     <PerkListItem>
       <div className="flex flex-col gap-1">
-        <span className="inline-flex gap-1">
+        <span className="inline-flex">
           <span className="font-bold">
             {new Intl.NumberFormat().format(chatsLimits.PRO)} chats
           </span>
           /months
           <MoreInfoTooltip>{chatsTooltip}</MoreInfoTooltip>
         </span>
-        <span className="text-xs text-gray-11">
+        <span className="text-xs text-muted-foreground">
           Extra chats:{" "}
-          <Button
-            size="xs"
-            variant="outline-secondary"
-            onClick={onChatsTiersClick}
-          >
+          <Button size="xs" variant="outline" onClick={onChatsTiersClick}>
             See tiers
           </Button>
         </span>

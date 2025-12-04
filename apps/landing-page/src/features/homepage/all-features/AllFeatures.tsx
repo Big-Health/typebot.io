@@ -1,7 +1,7 @@
-import { BracesIcon } from "@typebot.io/ui/icons/BracesIcon";
+import { CodeIcon } from "@typebot.io/ui/icons/CodeIcon";
 import { DatabaseIcon } from "@typebot.io/ui/icons/DatabaseIcon";
-import { FileCodeIcon } from "@typebot.io/ui/icons/FileCodeIcon";
-import { LinkIcon } from "@typebot.io/ui/icons/LinkIcon";
+import { DocumentCodeIcon } from "@typebot.io/ui/icons/DocumentCodeIcon";
+import { Link02Icon } from "@typebot.io/ui/icons/Link02Icon";
 import { UsersIcon } from "@typebot.io/ui/icons/UsersIcon";
 import { ZapIcon } from "@typebot.io/ui/icons/ZapIcon";
 import { cn } from "@typebot.io/ui/lib/cn";
@@ -26,7 +26,7 @@ const bgImageSrcs = [
 
 const cards = [
   {
-    Icon: BracesIcon,
+    Icon: CodeIcon,
     title: "Hidden fields",
     description:
       "Include data in your form URL to segment your user and use its data directly in your form.",
@@ -40,14 +40,14 @@ const cards = [
     rotateCoeff: 12,
   },
   {
-    Icon: LinkIcon,
+    Icon: Link02Icon,
     title: "Link to sub typebots",
     description:
       "For the in-depth analytics lovers who want to see flow with drop-off rate etc.",
     rotateCoeff: -7,
   },
   {
-    Icon: FileCodeIcon,
+    Icon: DocumentCodeIcon,
     title: "Custom code",
     description: "Customize everything with your own Javascript & CSS Code",
     rotateCoeff: -2,
@@ -78,7 +78,7 @@ const gapHeaderAndCard = 86;
 export const AllFeatures = () => {
   return (
     <div
-      className="flex flex-col gap-8 w-full max-w-7xl md:pt-[--padding-top] md:pb-[calc(100vh-var(--padding-top)-var(--header-height))]"
+      className="flex flex-col gap-8 w-full max-w-7xl md:pt-(--padding-top) md:pb-[calc(100vh-var(--padding-top)-var(--header-height))]"
       style={
         {
           "--total-cards": cards.length,
@@ -91,7 +91,7 @@ export const AllFeatures = () => {
       }
     >
       <div className="md:overflow-visible flex flex-col items-center md:h-all-features-sticky-container">
-        <div className="md:sticky flex flex-col md:justify-between items-center max-w-xl flex-shrink-0 top-[--padding-top] md:h-[--header-height] gap-6 md:gap-0">
+        <div className="md:sticky flex flex-col md:justify-between items-center max-w-xl shrink-0 top-(--padding-top) md:h-(--header-height) gap-6 md:gap-0">
           <h2 className="px-4 text-center">
             All the features you need to hack bots building
           </h2>
@@ -126,7 +126,7 @@ export const AllFeatures = () => {
                 key={feature.title}
                 index={index}
                 feature={feature}
-                className="md:animate-slight-random-rotate md:w-[--card-width] md:h-[--card-height]"
+                className="md:animate-slight-random-rotate md:w-(--card-width) md:h-(--card-height)"
                 style={{
                   animationTimeline: "--cards-container",
                   animationRange: `exit-crossing calc(${index / cards.length} * 100%) exit-crossing calc(${(index + 1) / cards.length} * 100%)`,
@@ -170,11 +170,11 @@ const FeatureCard = ({
           backgroundImage: `url('${bgImageSrcs[index]}')`,
         }}
       >
-        <feature.Icon className="size-6 text-gray-1" />
+        <feature.Icon className="size-6 text-background" />
       </div>
       <div className="flex flex-col gap-2 text-center max-w-xs">
         <h2 className="text-2xl">{feature.title}</h2>
-        <p className="text-gray-11">{feature.description}</p>
+        <p>{feature.description}</p>
       </div>
     </Card>
   );
@@ -192,7 +192,7 @@ const Dots = () => (
     {cards.map((_, index) => (
       <div
         key={index}
-        className="size-2 rounded-full bg-gray-3"
+        className="size-2 rounded-full bg-muted"
         style={{
           animation: "fill-carousel-dot ease-out forwards",
           animationTimeline: "--cards-container",

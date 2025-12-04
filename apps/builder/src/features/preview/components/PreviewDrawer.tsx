@@ -1,18 +1,11 @@
-import {
-  Fade,
-  Flex,
-  HStack,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
 import { useTranslate } from "@tolgee/react";
+import { reload } from "@typebot.io/react";
 import { Button } from "@typebot.io/ui/components/Button";
-import { CloseIcon } from "@typebot.io/ui/icons/CloseIcon";
+import { Cancel01Icon } from "@typebot.io/ui/icons/Cancel01Icon";
 import { useDrag } from "@use-gesture/react";
 import { useState } from "react";
 import { useGraph } from "@/features/graph/providers/GraphProvider";
 import { useRightPanel } from "@/hooks/useRightPanel";
-import { headerHeight } from "../../editor/constants";
 import { useTypebot } from "../../editor/providers/TypebotProvider";
 import { runtimes } from "../data";
 import { PreviewDrawerBody } from "./PreviewDrawerBody";
@@ -35,7 +28,6 @@ export const PreviewDrawer = () => {
   const { setPreviewingBlock } = useGraph();
   const [width, setWidth] = useState(500);
   const [isResizeHandleVisible, setIsResizeHandleVisible] = useState(false);
-  const [restartKey, setRestartKey] = useState(0);
   const [selectedRuntime, setSelectedRuntime] = useState<
     (typeof runtimes)[number]
   >(getDefaultRuntime(typebot?.id));
@@ -43,7 +35,7 @@ export const PreviewDrawer = () => {
 
   const handleRestartClick = async () => {
     await save();
-    setRestartKey((key) => key + 1);
+    reload();
   };
 
   const handleCloseClick = () => {
@@ -68,33 +60,23 @@ export const PreviewDrawer = () => {
   };
 
   return (
-    <Flex
-      pos="absolute"
-      right="0"
-      top={`0`}
-      h={`100%`}
-      bgColor={useColorModeValue("white", "gray.950")}
-      borderLeftWidth={"1px"}
-      shadow="md"
-      borderLeftRadius={"lg"}
+    <div
+      className="flex absolute border-l shadow-md p-6 right-0 top-0 h-full bg-gray-1 rounded-l-lg z-10"
       onMouseOver={() => setIsResizeHandleVisible(true)}
       onMouseLeave={() => setIsResizeHandleVisible(false)}
-      p="6"
-      zIndex={10}
+      onFocus={() => setIsResizeHandleVisible(true)}
+      onBlur={() => setIsResizeHandleVisible(false)}
       style={{ width: `${width}px` }}
     >
-      <Fade in={isResizeHandleVisible}>
+      {isResizeHandleVisible && (
         <ResizeHandle
           {...useResizeHandleDrag()}
-          pos="absolute"
-          left="-7.5px"
-          top={`calc(50% - ${headerHeight}px)`}
+          className="animate-in fade-in-0 absolute left-[-7.5px] top-1/2 -translate-y-1/2"
         />
-      </Fade>
-
-      <VStack w="full" spacing={4}>
-        <HStack justifyContent={"space-between"} w="full">
-          <HStack>
+      )}
+      <div className="flex flex-col items-center w-full gap-4">
+        <div className="flex items-center gap-2 justify-between w-full">
+          <div className="flex items-center gap-2">
             <RuntimeMenu
               selectedRuntime={selectedRuntime}
               onSelectRuntime={setPreviewRuntimeAndSaveIntoLocalStorage}
@@ -108,14 +90,14 @@ export const PreviewDrawer = () => {
                 {t("preview.restartButton.label")}
               </Button>
             ) : null}
-          </HStack>
+          </div>
 
           <Button onClick={handleCloseClick} variant="secondary" size="icon">
-            <CloseIcon />
+            <Cancel01Icon />
           </Button>
-        </HStack>
-        <PreviewDrawerBody key={restartKey} runtime={selectedRuntime.name} />
-      </VStack>
-    </Flex>
+        </div>
+        <PreviewDrawerBody runtime={selectedRuntime.name} />
+      </div>
+    </div>
   );
 };

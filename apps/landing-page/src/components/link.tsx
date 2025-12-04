@@ -1,6 +1,6 @@
 import { createLink, type LinkComponentProps } from "@tanstack/react-router";
 import { buttonVariants } from "@typebot.io/ui/components/Button";
-import { ArrowUpRightIcon } from "@typebot.io/ui/icons/ArrowUpRightIcon";
+import { ArrowUpRight01Icon } from "@typebot.io/ui/icons/ArrowUpRight01Icon";
 import { cn } from "@typebot.io/ui/lib/cn";
 import { cva, type VariantProps } from "@typebot.io/ui/lib/cva";
 import { forwardRef, type HTMLProps } from "react";
@@ -56,7 +56,7 @@ export const TextLinkComponent = forwardRef<
     >
       {children}
       {props.target === "_blank" && !hideExternalIcon && (
-        <ArrowUpRightIcon className={textLinkIconVariants({ size })} />
+        <ArrowUpRight01Icon className={textLinkIconVariants({ size })} />
       )}
     </a>
   );
@@ -94,19 +94,16 @@ export const CtaButtonLinkComponent = forwardRef<
   CtaButtonLinkProps
 >(({ variant, className, size, children, ...props }, ref) => {
   return (
-    <div className="overflow-hidden rounded-lg relative">
-      <a
-        className={cn(
-          buttonVariants({ size, className }),
-          ctaButtonVariants({ variant }),
-          "w-full",
-        )}
-        ref={ref}
-        {...props}
-      >
-        {children}
-      </a>
-    </div>
+    <a
+      className={cn(
+        buttonVariants({ size, className }),
+        ctaButtonVariants({ variant }),
+      )}
+      ref={ref}
+      {...props}
+    >
+      {children}
+    </a>
   );
 });
 const CreatedCtaButtonLinkComponent = createLink(CtaButtonLinkComponent);
